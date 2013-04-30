@@ -14,8 +14,8 @@ Vector<Vector<Set<string> > > subsetsOf2(Vector<Set<string> > masterSet) {
     
 	/* Base case: The only subset of the empty set is the empty set itself. */
 	if (masterSet.isEmpty()) {
-		result += masterSet;
-		return result;
+        result += masterSet;
+        return result;
 	}
 	/* Recursive step: Pull out a single element and obtain all subsets of
 	 * the remaining elements.  All of those subsets are subsets of the
@@ -25,10 +25,10 @@ Vector<Vector<Set<string> > > subsetsOf2(Vector<Set<string> > masterSet) {
 	else {
 		Set<string> elem = masterSet[0];
         pruned.remove(0);
-        
+
 		foreach (Vector<Set<string> > subset in subsetsOf2(pruned)) {
 			result += subset;
-            
+
             subset.add(elem);
 			result += subset;
 		}

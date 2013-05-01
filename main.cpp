@@ -1,6 +1,6 @@
-/* File: subsets.cpp
+/* File: combinations.cpp
  *
- * A program to list off all subsets of a master set.
+ * A program to list off all combinations of a master set.
  */
 #include <iostream>
 #include <string>
@@ -8,35 +8,11 @@
 #include "vector.h"
 using namespace std;
 
-Vector<Vector<Set<string> > > subsetsOf2(Vector<Set<string> > masterSet) {
-	Vector<Vector<Set<string> > > result;
-    Vector<Set<string> > pruned = masterSet;
-    
-	/* Base case: The only subset of the empty set is the empty set itself. */
-	if (masterSet.isEmpty()) {
-        result += masterSet;
-        return result;
-	}
-	/* Recursive step: Pull out a single element and obtain all subsets of
-	 * the remaining elements.  All of those subsets are subsets of the
-	 * master set, as are all sets formed by taking one of those sets
-	 * and adding the original element back in.
-	 */
-	else {
-		Set<string> elem = masterSet[0];
-        pruned.remove(0);
+void listCombinationsOf(Vector<Set<string> > s, int k,
+                        Set<string>& cities,
+                        Vector< Set<string> >& result);
 
-		foreach (Vector<Set<string> > subset in subsetsOf2(pruned)) {
-			result += subset;
-
-            subset.add(elem);
-			result += subset;
-		}
-		return result;
-	}
-}
-
-int main() {    
+int main() {
     Set<string> cities1;
     cities1 += "A", "B", "C", "D", "E", "F";
     
@@ -52,13 +28,80 @@ int main() {
     Set<string> hospitalCoverage4;
     hospitalCoverage4 += "C", "E", "F";
     
-    Vector< Set<string> > locations;
-    locations.add(hospitalCoverage1);
-    locations.add(hospitalCoverage2);
-    locations.add(hospitalCoverage3);
-    locations.add(hospitalCoverage4);
+    Vector< Set<string> > locations1;
+    locations1.add(hospitalCoverage1);
+    locations1.add(hospitalCoverage2);
+    locations1.add(hospitalCoverage3);
+    locations1.add(hospitalCoverage4);
+	
+    Vector< Set<string> > result;
+	listCombinationsOf(locations1, 4, cities1, result);
+}
 
-    Vector< Vector< Set<string> > > comboLocations = subsetsOf2(locations);
-    cout << "---**---" << endl;
-    cout << comboLocations << endl;
+bool doesLocationCombinationCoverCities(Set<string> cities,
+                                        Vector< Set<string> > result) {
+    if (cities.size() == 0) {
+        // Base Case: Cities is empty; All cities covered
+        return true;
+    } else if (result.size() == 0) {
+        // Base Case: All hospital locations taken into account
+        return false;
+    } else {
+        Set<string> firstHospitalCoverage = result[0];
+        result.remove(0);
+        Set<string> uncoveredCities = cities - firstHospitalCoverage;
+        return doesLocationCombinationCoverCities(uncoveredCities, result);
+    }
+}
+
+/* Recursively lists off all combinations of k elements from the master
+ * set s, under the assumption we've already built up the partial set
+ * soFar.
+ */
+bool recListCombinationsOf(Vector<Set<string> > s,
+                           int k,
+                           Vector<Set<string> > soFar,
+                           Set<string>& cities,
+                           Vector< Set<string> >& result) {
+	if (k == 0) {
+        /* Base case 1: If there are no more elements to pick, output
+         * what we have so far.
+         */
+//        cout << soFar.size() << endl;
+//		cout << soFar << endl;
+        if (doesLocationCombinationCoverCities(cities, soFar)) {
+            result = soFar;
+            return true;
+        }
+	} else if (k != 0 && k <= s.size()) {
+		/* Fix some element from the set. */
+		Set<string> elem = s[0];
+        Vector<Set<string> > soFarAdjusted = soFar;
+        soFarAdjusted.add(elem);
+
+		/* Option 1: Pick this element. Then we need k - 1 elements from
+		 * the remainder of the set.
+		 */
+        Vector<Set<string> > sPruned = s;
+        sPruned.remove(0);
+		recListCombinationsOf(sPruned, k - 1, soFarAdjusted, cities, result);
+
+		/* Option 2: Don't pick this element. Then we need k elements from
+		 * the remainder of the set.
+		 */
+		recListCombinationsOf(sPruned, k, soFar, cities, result);
+	}
+}
+
+void listCombinationsOf(Vector<Set<string> > s, int k,
+                        Set<string>& cities,
+                        Vector< Set<string> >& result) {
+    Vector<Set<string> > emptySet;
+    // Start at 1 so we find the most efficient solution first
+    for (int i = 1; i <= k; i++) {
+        if (recListCombinationsOf(s, i, emptySet, cities, result)) {
+            cout << result << endl;
+            break;
+        }
+    }
 }

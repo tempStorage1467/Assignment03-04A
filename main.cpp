@@ -35,7 +35,7 @@ int main() {
     locations1.add(hospitalCoverage4);
 	
     Vector< Set<string> > result;
-	listCombinationsOf(locations1, 4, cities1, result);
+	listCombinationsOf(locations1, 3, cities1, result);
 }
 
 bool doesLocationCombinationCoverCities(Set<string> cities,
@@ -67,8 +67,6 @@ bool recListCombinationsOf(Vector<Set<string> > s,
         /* Base case 1: If there are no more elements to pick, output
          * what we have so far.
          */
-//        cout << soFar.size() << endl;
-//		cout << soFar << endl;
         if (doesLocationCombinationCoverCities(cities, soFar)) {
             result = soFar;
             return true;
@@ -84,12 +82,16 @@ bool recListCombinationsOf(Vector<Set<string> > s,
 		 */
         Vector<Set<string> > sPruned = s;
         sPruned.remove(0);
-		recListCombinationsOf(sPruned, k - 1, soFarAdjusted, cities, result);
+		if (recListCombinationsOf(sPruned, k - 1, soFarAdjusted, cities, result)) {
+            return true;
+        }
 
 		/* Option 2: Don't pick this element. Then we need k elements from
 		 * the remainder of the set.
 		 */
-		recListCombinationsOf(sPruned, k, soFar, cities, result);
+		if (recListCombinationsOf(sPruned, k, soFar, cities, result)) {
+            return true;
+        }
 	}
 }
 
